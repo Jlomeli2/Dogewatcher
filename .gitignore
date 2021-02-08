@@ -1,0 +1,9 @@
+node_modules/
+.git/
+.vscode/
+.env
+
+build/
+src/settings.json
+assets/img/reaction/*.*
+!assets/img/reaction/.gitkeep
