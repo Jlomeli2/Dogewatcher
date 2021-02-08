@@ -12,7 +12,6 @@ const envVars: Record<string, string> = {
     COMMAND_PREFIX: env.COMMAND_PREFIX,
     DEV_ID: env.DEV_ID,
     API_KEY: env.API_KEY,
-    CHANNEL_ID: env.CHANNEL_ID,
 };
 
 /**

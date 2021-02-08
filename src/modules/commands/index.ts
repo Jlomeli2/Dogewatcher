@@ -1,8 +1,8 @@
 import { Command } from "../../models/commands";
 
 import help from "./help";
-import get from "./get";
+import currency from "./currency";
 
-const commands: Command[] = [help, get];
+const commands: Command[] = [help, currency];
 
 export default commands;

@@ -4,7 +4,6 @@ import chalk from "chalk";
 import constants from "./modules/constants";
 
 import MessageHandler from "./modules/handlers/message";
-import ApiHandler from "./modules/handlers/api";
 
 // Create client interface and prepare handler
 const client = new Discord.Client();
@@ -12,7 +11,7 @@ const mh = new MessageHandler();
 
 // Logs ready message
 client.on("ready", () => {
-    console.log(chalk.green("DOGE Watcher is now watching stonks!"));
+    console.log(chalk.green("Crypto Watcher is now watching stonks!"));
 });
 
 // Handle commands
