@@ -11,7 +11,7 @@ const mh = new MessageHandler();
 
 // Logs ready message
 client.on("ready", () => {
-    console.log(chalk.green("Fika Bot is now serving dammsugare!"));
+    console.log(chalk.green("DOGE Watcher is now watching stonks!"));
 });
 
 // Handle commands

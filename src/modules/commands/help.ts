@@ -19,7 +19,7 @@ function executeHelp(message: Discord.Message): void {
 
     // Send the help text to user who called "help" in DM.
     author.send(
-        "Hello, stranger! You can find the descriptions and usage instructions for commands here:\nhttps://github.com/EpiX0R/fika_bot/blob/master/COMMANDS.md",
+        "Hello, stranger! You can find the descriptions and usage instructions for commands here:\nhttps://github.com/EpiX0R/doge-watcher/blob/master/COMMANDS.md",
     );
 }
 

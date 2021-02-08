@@ -11,6 +11,7 @@ const envVars: Record<string, string> = {
     NODE_ENV: env.NODE_ENV,
     COMMAND_PREFIX: env.COMMAND_PREFIX,
     DEV_ID: env.DEV_ID,
+    API_KEY: env.API_KEY,
 };
 
 /**
