@@ -1,14 +1,17 @@
 import * as Discord from "discord.js";
 
+import settings from "../../settings.json";
+
 import ApiHandler from "../handlers/api";
 
 import { Command } from "../../models/commands";
 
+const cron = require("node-cron");
 const get: Command = {
-    name: "get",
+    name: "start",
     description: "Gets market data from CoinMarketCap.",
     usage: [""],
-    execute: executeGet,
+    execute: executeStart,
 };
 
 /**
@@ -16,23 +19,25 @@ const get: Command = {
  *
  * @param {Discord.Message} message The Discord message which called upon the command.
  */
-async function executeGet(message: Discord.Message) {
+async function executeStart(message: Discord.Message) {
     const channel = message.channel;
+    const author = message.author;
+    const admins = settings.admin_list;
     const ah = new ApiHandler;
 
-    // Get market data.
-    const ahResponse = await ah.get();
+    // Check if user is in the admin list in settings.json.
+    if (!admins.includes(author.id)) {
+        channel.send(`:x: Sorry ${author}, this command can only be run by an administrator. :x:`);
+        return;
+    }
 
-    console.log(ahResponse);
+    await ah.get(message);
 
-    // Send the current market data in the same channel the command was called.
-    channel.send(
-        "```"
-        + "Timestamp: " + ahResponse.status.timestamp
-        + "DOGE Amount: " + ahResponse.data.amount + "\n"
-        + "SEK Value: " + ahResponse.data.quote.SEK.price
-        + "```"
-    );
+    cron.schedule("0 */10 * * * *", async () => {
+        await ah.get(message);
+    })
+
+    channel.send("Started DOGE Watcher. Updates will be posted every 10 minutes.")
 }
 
 export default get;

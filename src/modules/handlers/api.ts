@@ -9,7 +9,7 @@ class ApiHandler {
     /**
      * Gets market data from CoinMarketCap.
      */
-    public async get(amount: Number = 1): Promise<any> {
+    public async get(message: Discord.Message, amount: Number = 1): Promise<any> {
         const rp = require('request-promise');
         const requestOptions = {
         method: 'GET',
@@ -26,11 +26,23 @@ class ApiHandler {
         gzip: true
         };
 
-        return await rp(requestOptions).then((response: any) => {
+        const response = await rp(requestOptions).then((response: any) => {
             return response;
         }).catch((err: { message: any; }) => {
             console.log('API call error:', err.message);
         });
+
+        this.post(message, response);
+    }
+
+    private post(message: Discord.Message, response: any) {
+        message.channel.send(
+            "```"
+            + "Timestamp: " + response.status.timestamp + "\n"
+            + "DOGE Amount: " + response.data.amount + "\n"
+            + "SEK Value: " + response.data.quote.SEK.price
+            + "```"
+        );
     }
 }
 

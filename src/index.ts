@@ -4,6 +4,7 @@ import chalk from "chalk";
 import constants from "./modules/constants";
 
 import MessageHandler from "./modules/handlers/message";
+import ApiHandler from "./modules/handlers/api";
 
 // Create client interface and prepare handler
 const client = new Discord.Client();
