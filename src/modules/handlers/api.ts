@@ -125,7 +125,7 @@ class ApiHandler {
                         response.data.quote[currencySymbol].price +
                         "```",
                 ),
-                status: "WATCHING",
+                isMonitoring: true,
                 interval: 10,
                 timestamp: new Date().toISOString(),
                 amount: amount,
@@ -141,7 +141,7 @@ class ApiHandler {
                     const response = await this.get(amount, cryptoSymbol, currencySymbol);
 
                     this.updateCurrentMessage(
-                        "WATCHING",
+                        false,
                         amount,
                         response.status.timestamp,
                         cryptoSymbol,
@@ -157,24 +157,24 @@ class ApiHandler {
 
     /**
      * Updates this.currentMessage with new data.
-     * TODO: Update status to boolean isWatching
-     * @param status The current status of the monitored job
-     * @param amount The amount of chosen crypto to convert
-     * @param timestamp The current timestamp
-     * @param cryptoSymbol The symbol of the crypto to convert from
-     * @param currencySymbol The symbol of the currency to convert to
-     * @param price The price of the converted currency
+     *
+     * @param isMonitoring      The current status of the monitored job
+     * @param amount            The amount of chosen crypto to convert
+     * @param timestamp         The current timestamp
+     * @param cryptoSymbol      The symbol of the crypto to convert from
+     * @param currencySymbol    The symbol of the currency to convert to
+     * @param price             The price of the converted currency
      */
     private updateCurrentMessage(
-        status = "WATCHING",
-        amount = 1,
+        isMonitoring: boolean,
+        amount: number,
         timestamp: string,
-        cryptoSymbol = "DOGE",
-        currencySymbol = "SEK",
+        cryptoSymbol: string,
+        currencySymbol: string,
         price: number,
     ): void {
         if (this.currentMessage !== undefined) {
-            this.currentMessage.status = status;
+            this.currentMessage.isMonitoring = isMonitoring;
             this.currentMessage.amount = amount;
             this.currentMessage.timestamp = timestamp;
             this.currentMessage.cryptoSymbol = cryptoSymbol;
@@ -189,25 +189,25 @@ class ApiHandler {
     private async updateCurrentDiscordMessage(): Promise<void> {
         if (this.currentMessage !== undefined) {
             this.currentMessage.message = await this.currentMessage.message.edit(
-                "```" +
-                    "Status: " +
-                    this.currentMessage.status +
-                    "\n" +
-                    "(Interval: " +
-                    this.currentMessage.interval +
-                    "min)" +
-                    "\n\n" +
-                    "Latest fetch: " +
-                    this.currentMessage.timestamp +
-                    "\n" +
-                    this.currentMessage.cryptoSymbol +
-                    ": " +
-                    this.currentMessage.amount +
-                    "\n" +
-                    this.currentMessage.currencySymbol +
-                    ": " +
-                    this.currentMessage.price +
-                    "```",
+                "```" + "Status: " + this.currentMessage.isMonitoring
+                    ? "WATCHING"
+                    : "STOPPED" +
+                          "\n" +
+                          "(Interval: " +
+                          this.currentMessage.interval +
+                          "min)" +
+                          "\n\n" +
+                          "Latest fetch: " +
+                          this.currentMessage.timestamp +
+                          "\n" +
+                          this.currentMessage.cryptoSymbol +
+                          ": " +
+                          this.currentMessage.amount +
+                          "\n" +
+                          this.currentMessage.currencySymbol +
+                          ": " +
+                          this.currentMessage.price +
+                          "```",
             );
         }
     }
@@ -223,7 +223,7 @@ class ApiHandler {
 
         if (this.currentMessage !== undefined) {
             this.updateCurrentMessage(
-                "STOPPED",
+                false,
                 this.currentMessage.amount,
                 this.currentMessage.timestamp,
                 this.currentMessage.cryptoSymbol,

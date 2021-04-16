@@ -7,7 +7,7 @@ export type CryptoWatchMessage = {
     message: Discord.Message;
     interval: number;
     timestamp: string;
-    status: string;
+    isMonitoring: boolean;
     amount: number;
     cryptoSymbol: string;
     currencySymbol: string;
