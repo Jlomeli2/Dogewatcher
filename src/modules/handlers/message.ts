@@ -8,6 +8,7 @@ import constants from "../constants";
  */
 class MessageHandler {
     private ch = new CommandHandler();
+
     /**
      * Handles messages in Discord.
      *

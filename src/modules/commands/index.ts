@@ -1,8 +1,9 @@
-import { Command } from "../../models/commands";
-
 import help from "./help";
 import currency from "./currency";
 
-const commands: Command[] = [help, currency];
+import { ExecCommand } from "../../models/ExecCommand";
+import { ApiCommand } from "../../models/ApiCommand";
+
+const commands: (ExecCommand | ApiCommand)[] = [help, currency];
 
 export default commands;

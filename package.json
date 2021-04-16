@@ -1,7 +1,7 @@
 {
-  "name": "fika_bot",
-  "version": "0.0.0",
-  "description": "A bot for the Fikabröd Discord server",
+  "name": "crypto_watcher",
+  "version": "0.1.0",
+  "description": "A bot for monitoring crypto currency.",
   "main": "build/index.js",
   "scripts": {
     "build": "tsc",
@@ -12,9 +12,8 @@
   "keywords": [
     "discord",
     "bot",
-    "doge",
-    "watcher",
-    "crypto"
+    "crypto",
+    "monitoring"
   ],
   "author": "EpiX0R",
   "license": "MIT",

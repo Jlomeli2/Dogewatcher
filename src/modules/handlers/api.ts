@@ -1,6 +1,7 @@
 import * as Discord from "discord.js";
 
 import constants from "../constants";
+import { CryptoWatchMessage } from "../../models/CryptoWatchMessage";
 
 import cron from "node-cron";
 import rp from "request-promise";
@@ -10,6 +11,8 @@ import rp from "request-promise";
  */
 class ApiHandler {
     private cronJob: cron.ScheduledTask | undefined;
+    private currentMessage: CryptoWatchMessage | undefined;
+
     /**
      * Performs a request to get currency conversion via CoinMarketCap API.
      *
@@ -66,7 +69,6 @@ class ApiHandler {
             return;
         }
 
-        // TODO: Fix response quote to support multiple currency symbols
         message.channel.send(
             "```" +
                 "Timestamp: " +
@@ -78,55 +80,161 @@ class ApiHandler {
                 "\n" +
                 currencySymbol +
                 " Value: " +
-                response.data.quote.SEK.price +
+                response.data.quote[currencySymbol].price +
                 "```",
         );
         return;
     }
 
     /**
-     * Sets up a Cron job to print crypto value every 10 minutes.
+     * Sets up a Cron job to print crypto currency price conversion every 10 minutes.
      *
-     * @param message A Discord.Message.
-     * @param amount The amount of chosen crypto to convert.
-     * @param cryptoSymbol The symbol of the crypto to convert from.
-     * @param currencySymbol The symbol of the currency to convert to.
+     * @param message           A Discord.Message
+     * @param amount            The amount of chosen crypto to convert
+     * @param cryptoSymbol      The symbol of the crypto to convert from
+     * @param currencySymbol    The symbol of the currency to convert to
+     * @param interval          The interval (in minutes) of which to update the monitored job
      */
     public async watch(
         message: Discord.Message,
         amount = 1,
         cryptoSymbol = "DOGE",
         currencySymbol = "SEK",
+        interval = 10,
     ): Promise<void> {
-        message.channel.send(
-            "```Crypto Watcher is now watching " +
-                amount +
-                " " +
-                cryptoSymbol +
-                " in " +
-                currencySymbol +
-                " every 10 minutes.```",
-        );
+        if (this.currentMessage === undefined) {
+            const response = await this.get(amount, cryptoSymbol, currencySymbol);
+            const currentMessage: CryptoWatchMessage = {
+                message: await message.channel.send(
+                    "```" +
+                        "Status: WATCHING" +
+                        "\n" +
+                        "(Interval: " +
+                        interval +
+                        "min)" +
+                        "\n\n" +
+                        "Latest fetch: " +
+                        response.status.timestamp +
+                        "\n" +
+                        cryptoSymbol +
+                        ": " +
+                        amount +
+                        "\n" +
+                        currencySymbol +
+                        ": " +
+                        response.data.quote[currencySymbol].price +
+                        "```",
+                ),
+                status: "WATCHING",
+                interval: 10,
+                timestamp: new Date().toISOString(),
+                amount: amount,
+                cryptoSymbol: cryptoSymbol,
+                currencySymbol: currencySymbol,
+                price: 0,
+            };
 
-        this.getToChat(message, amount, cryptoSymbol, currencySymbol);
+            this.currentMessage = currentMessage;
 
-        if (this.cronJob === undefined) {
-            this.cronJob = cron.schedule("0 */10 * * * *", async () => {
-                await this.getToChat(message, amount, cryptoSymbol, currencySymbol);
-            });
+            if (this.cronJob === undefined) {
+                this.cronJob = cron.schedule("0 */" + interval + " * * * *", async () => {
+                    const response = await this.get(amount, cryptoSymbol, currencySymbol);
+
+                    this.updateCurrentMessage(
+                        "WATCHING",
+                        amount,
+                        response.status.timestamp,
+                        cryptoSymbol,
+                        currencySymbol,
+                        response.data.quote[currencySymbol].price,
+                    );
+
+                    await this.updateCurrentDiscordMessage();
+                });
+            }
+        }
+    }
+
+    /**
+     * Updates this.currentMessage with new data.
+     * TODO: Update status to boolean isWatching
+     * @param status The current status of the monitored job
+     * @param amount The amount of chosen crypto to convert
+     * @param timestamp The current timestamp
+     * @param cryptoSymbol The symbol of the crypto to convert from
+     * @param currencySymbol The symbol of the currency to convert to
+     * @param price The price of the converted currency
+     */
+    private updateCurrentMessage(
+        status = "WATCHING",
+        amount = 1,
+        timestamp: string,
+        cryptoSymbol = "DOGE",
+        currencySymbol = "SEK",
+        price: number,
+    ): void {
+        if (this.currentMessage !== undefined) {
+            this.currentMessage.status = status;
+            this.currentMessage.amount = amount;
+            this.currentMessage.timestamp = timestamp;
+            this.currentMessage.cryptoSymbol = cryptoSymbol;
+            this.currentMessage.currencySymbol = currencySymbol;
+            this.currentMessage.price = price;
+        }
+    }
+
+    /**
+     * Updates the displayed Discord message with the new data in this.currentMessage
+     */
+    private async updateCurrentDiscordMessage(): Promise<void> {
+        if (this.currentMessage !== undefined) {
+            this.currentMessage.message = await this.currentMessage.message.edit(
+                "```" +
+                    "Status: " +
+                    this.currentMessage.status +
+                    "\n" +
+                    "(Interval: " +
+                    this.currentMessage.interval +
+                    "min)" +
+                    "\n\n" +
+                    "Latest fetch: " +
+                    this.currentMessage.timestamp +
+                    "\n" +
+                    this.currentMessage.cryptoSymbol +
+                    ": " +
+                    this.currentMessage.amount +
+                    "\n" +
+                    this.currentMessage.currencySymbol +
+                    ": " +
+                    this.currentMessage.price +
+                    "```",
+            );
         }
     }
 
     /**
      * Stops monitoring the current currency.
      */
-    public stopWatching(message: Discord.Message,): void {
+    public stopWatching(): void {
         if (this.cronJob !== undefined) {
             this.cronJob.stop();
             this.cronJob = undefined;
         }
 
-        message.channel.send("```Stopped watching the current Crypto...```");
+        if (this.currentMessage !== undefined) {
+            this.updateCurrentMessage(
+                "STOPPED",
+                this.currentMessage.amount,
+                this.currentMessage.timestamp,
+                this.currentMessage.cryptoSymbol,
+                this.currentMessage.currencySymbol,
+                this.currentMessage.price,
+            );
+        }
+
+        this.updateCurrentDiscordMessage().then(() => {
+            this.currentMessage = undefined;
+        });
     }
 }
 

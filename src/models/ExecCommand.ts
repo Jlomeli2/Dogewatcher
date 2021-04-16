@@ -1,11 +1,10 @@
 import * as Discord from "discord.js";
 
+import { BaseCommand } from "./BaseCommand";
+
 /**
  * A Command model. Used for defining and handling commands.
  */
-export type Command = {
-    name: string;
-    description: string;
-    usage: string[];
+export type ExecCommand = BaseCommand & {
     execute: (message: Discord.Message) => void;
 };

@@ -2,10 +2,11 @@ import * as Discord from "discord.js";
 
 import settings from "../../settings.json";
 import ApiHandler from "../handlers/api";
-import { Command } from "../../models/commands";
+import { ApiCommand } from "../../models/ApiCommand";
 import constants from "../constants";
 
-const currency: Command = {
+const currency: ApiCommand = {
+    type: "ApiCommand",
     name: "currency",
     description: "Gets market data from CoinMarketCap.",
     usage: ["get", "watch", "stop"],
@@ -17,7 +18,7 @@ const currency: Command = {
  *
  * @param {Discord.Message} message The Discord message which called upon the command.
  */
-async function executeCurrency(message: Discord.Message) {
+async function executeCurrency(message: Discord.Message, ah: ApiHandler) {
     const channel = message.channel;
     const author = message.author;
     const admins = settings.admin_list;
@@ -38,13 +39,13 @@ async function executeCurrency(message: Discord.Message) {
     // Switch based on sub-command
     switch (parameters[1]) {
         case "get":
-            getCurrency(message, amount, cryptoSymbol, currencySymbol);
+            getCurrency(message, ah, amount, cryptoSymbol, currencySymbol);
             break;
         case "watch":
-            watchCurrency(message, amount, cryptoSymbol, currencySymbol);
+            watchCurrency(message, ah, amount, cryptoSymbol, currencySymbol);
             break;
         case "stop":
-            stopWatchingCurrency(message);
+            stopWatchingCurrency(message, ah);
             break;
         default:
             break;
@@ -52,46 +53,50 @@ async function executeCurrency(message: Discord.Message) {
 }
 
 /**
- * Sends the list of available commands to the user who called the "help" command.
+ * Gets the converted value of a specific amount of a crypto and currency and displays in chat.
  *
- * @param {Discord.Message} message The Discord message which called upon the command.
+ * @param { Discord.Message } message   The message that called upon the function
+ * @param { ApiHandler } api            A reference to the current ApiHandler object
+ * @param { number } _amount            The amount of crypto to be converted into currency
+ * @param { String } _cryptoSymbol      The CoinMarketCap API Crypto Symbol
+ * @param { String } _currencySymbol    Tge CointMarketCap API Currency Symbol
  */
 async function getCurrency(
     message: Discord.Message,
+    api: ApiHandler,
     _amount = 1,
     _cryptoSymbol = "DOGE",
     _currencySymbol = "SEK",
 ): Promise<void> {
-    const ah = new ApiHandler();
-
-    ah.getToChat(message, _amount, _cryptoSymbol, _currencySymbol);
+    api.getToChat(message, _amount, _cryptoSymbol, _currencySymbol);
 }
 
 /**
- * Sends the list of available commands to the user who called the "help" command.
+ * Gets the converted value of a specific amount of a crypto and currency and displays in chat.
  *
- * @param {Discord.Message} message The Discord message which called upon the command.
+ * @param { Discord.Message } message   The message that called upon the function
+ * @param { ApiHandler } api            A reference to the current ApiHandler object
+ * @param { number } _amount            The amount of crypto to be converted into currency
+ * @param { String } _cryptoSymbol      The CoinMarketCap API Crypto Symbol
+ * @param { String } _currencySymbol    The CointMarketCap API Currency Symbol
+ * @param { number } _interval          The interval in minute between the watched currency gets updated
  */
 async function watchCurrency(
     message: Discord.Message,
+    api: ApiHandler,
     _amount = 1,
     _cryptoSymbol = "DOGE",
     _currencySymbol = "SEK",
+    _interval = 10,
 ): Promise<void> {
-    const ah = new ApiHandler();
-
-    ah.watch(message, _amount, _cryptoSymbol, _currencySymbol);
+    api.watch(message, _amount, _cryptoSymbol, _currencySymbol, _interval);
 }
 
 /**
- * Sends the list of available commands to the user who called the "help" command.
- *
- * @param {Discord.Message} message The Discord message which called upon the command.
+ * TODO: Rework watchCurrency() to support stopping watch (add id maybe)
  */
-async function stopWatchingCurrency(message: Discord.Message): Promise<void> {
-    const ah = new ApiHandler();
-
-    ah.stopWatching(message);
+async function stopWatchingCurrency(message: Discord.Message, api: ApiHandler): Promise<void> {
+    api.stopWatching();
 }
 
 export default currency;

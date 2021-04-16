@@ -1,8 +1,9 @@
 import * as Discord from "discord.js";
 
-import { Command } from "../../models/commands";
+import { ExecCommand } from "../../models/ExecCommand";
 
-const help: Command = {
+const help: ExecCommand = {
+    type: "ExecCommand",
     name: "help",
     description: "Sends this message in DM's.",
     usage: [""],
@@ -19,7 +20,7 @@ function executeHelp(message: Discord.Message): void {
 
     // Send the help text to user who called "help" in DM.
     author.send(
-        "Hello, stranger! You can find the descriptions and usage instructions for commands here:\nhttps://github.com/EpiX0R/doge-watcher/blob/master/COMMANDS.md",
+        "Descriptions and usage instructions for commands can be found here:\nhttps://github.com/EpiX0R/doge-watcher/blob/master/COMMANDS.md",
     );
 }
 

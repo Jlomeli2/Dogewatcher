@@ -6,16 +6,16 @@ import constants from "./modules/constants";
 import MessageHandler from "./modules/handlers/message";
 
 // Create client interface and prepare handler
-const client = new Discord.Client();
+const discordClient = new Discord.Client();
 const mh = new MessageHandler();
 
 // Logs ready message
-client.on("ready", () => {
+discordClient.on("ready", () => {
     console.log(chalk.green("Crypto Watcher is now watching stonks!"));
 });
 
 // Handle commands
-client.on("message", (message) => {
+discordClient.on("message", (message) => {
     // Only listen to developer message in development mode.
     if (constants.NODE_ENV === "dev") {
         if (message.author.id === constants.DEV_ID) {
@@ -28,4 +28,4 @@ client.on("message", (message) => {
 });
 
 // Login bot with token
-client.login(constants.DISCORD_TOKEN);
+discordClient.login(constants.DISCORD_TOKEN);
